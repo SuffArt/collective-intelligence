@@ -50,6 +50,19 @@ def sim_distance(prefs,person1,person2):
                       for item in prefs[person1] if item in prefs[person2]]))
   return 1/(1+sum_of_squares)
 
+def sim_jaccard (prefs, person1, person2):
+  union = {}
+  intersec = {}
+  for item in prefs[person1]:
+    if item in prefs[person2] and (prefs[person1][item] == prefs[person2][item]):
+      intersec[item] = 1
+    union[item] = 1
+
+  for item in prefs[person2]:
+    union[item] = 1
+
+  return len(intersec) / len(union)
+
 
 # Returns the Euclidean distance squared score for person1 and person2
 def sim_distance_squared(prefs,person1,person2):
@@ -193,4 +206,50 @@ def loadMovieLens(path='movie_lens'):
     prefs[user][movies[movieid]]=float(rating)
   return prefs
 
+  # ******* User-based Efficient (Ex 3) ****
+  # Gets recommendations for a person by using a weighted average
+# of every other user's rankings
+def findSimilarUsers (prefs, person, max = 5, similarity = sim_pearson):
+  similar = []
+  for other in prefs:
+    if other == person: continue #ignore myself
+    sim = similarity(prefs, person, other)
+    if sim <= 0: continue
+    similar.append ((sim, other))
+
+  similar.sort()
+  similar.reverse()
+  return similar[0:max]
+
+def buildSimilarUserList (prefs, max = 5, similarity = sim_pearson):
+  similarList = {}
+  for person in prefs:
+    similarList[person] = findSimilarUsers(prefs, person, max, similarity)
+
+  return similarList
+
+def getRecommendations_fast(prefs, similarList, person):
+  totals={}
+  simSums={}
+
+  for similar in similarList[person]:
+    other = similar[1]
+    sim = similar[0]
+
+    for item in prefs[other]:
+      # only score movies I haven't seen yet
+      if item not in prefs[person] or prefs[person][item]==0:
+        # Similarity * Score
+        totals.setdefault(item,0)
+        totals[item]+=prefs[other][item]*sim
+        # Sum of similarities
+        simSums.setdefault(item,0)
+        simSums[item]+=sim
+  
+  # Create the normalized list
+  rankings=[(total/simSums[item],item) for item,total in totals.items()]
+  # Return the sorted list
+  rankings.sort()
+  rankings.reverse()
+  return rankings
 
