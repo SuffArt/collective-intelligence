@@ -233,22 +233,20 @@ def buildKCluster(rownames, colnames, data):
 
 
 # ***** Main ********
+
+# Reading data
 rownames, colnames, data = readfile ('blogdata.txt')
 
-#buildClustersBlogs(rownames, colnames, data)
-#buildClustersBlogs(rownames, colnames, data, euclidean, 'clusters_euclidean.png')
-#buildClustersBlogs(rownames, colnames, data, manhattan, 'clusters_manhattan.png')
+
+# Producing images using different distance algorithms
+# buildClustersBlogs(rownames, colnames, data)
+# buildClustersBlogs(rownames, colnames, data, euclidean, 'clusters_euclidean.png')
+# buildClustersBlogs(rownames, colnames, data, manhattan, 'clusters_manhattan.png')
 # buildClustersBlogs(rownames, colnames, data, jaccard, 'clusters_jaccard.png')
 
-print "Gerando H Cluster..."
-h_cluster = hcluster(data)
-print ".. done!"
-
-print "Gerando K-Cluster..."
-kclust, d = kcluster(data)
-print "...done!"
-
+# Building word cluster
 # buildClustersWords()
 
+# Building k-means cluster
 # buildKCluster(rownames, colnames, data)
 
