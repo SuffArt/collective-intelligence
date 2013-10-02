@@ -110,6 +110,30 @@ def printclust(clust,labels=None,n=0):
   if clust.left!=None: printclust(clust.left,labels=labels,n=n+1)
   if clust.right!=None: printclust(clust.right,labels=labels,n=n+1)
 
+# Prints out to a file a matrix of all distances between blogs, pairwise.
+# Attempts to be Excel-CSV-import friendly (since blog names tend to be long, it's difficult to read the output in a txt)
+def print_distances (blog_list, data, distance = pearson, filename = 'distancematrix.csv'):
+  num_blogs = len(blog_list)
+
+  out = file (filename, 'w')
+
+  # Writing columns names
+  out.write("\t") # First column is blog names
+  for blog in blog_list:
+    out.write("\"%s\"\t" % blog)
+  out.write('\n')
+
+  # Writing distances
+  for blog_index in range(num_blogs):
+    out.write("\"%s\"\t" % blog_list[blog_index]) # Blog name
+    # Distances (we write only half the matrix since it's simmetrical)
+    for other_blog_index in xrange (0, blog_index + 1):
+      out.write("%f\t" % distance(data[blog_index], data[other_blog_index]))
+    out.write("\n")
+
+  out.close()
+
+
 def getheight(clust):
   # Is this an endpoint? Then the height is just 1
   if clust.left==None and clust.right==None: return 1
@@ -243,6 +267,8 @@ rownames, colnames, data = readfile ('blogdata.txt')
 # buildClustersBlogs(rownames, colnames, data, euclidean, 'clusters_euclidean.png')
 # buildClustersBlogs(rownames, colnames, data, manhattan, 'clusters_manhattan.png')
 # buildClustersBlogs(rownames, colnames, data, jaccard, 'clusters_jaccard.png')
+
+# print_distances (rownames, data, distance=pearson, filename='distancematrix_pearson.csv')
 
 # Building word cluster
 # buildClustersWords()
