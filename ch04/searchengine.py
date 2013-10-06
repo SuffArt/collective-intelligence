@@ -183,9 +183,11 @@ class searcher:
   def getscoredlist(self,rows,wordids):
     totalscores=dict([(row[0],0) for row in rows])
     # This is where you'll later put the scoring functions
-    weights=[ (1.0, self.locationscore(rows)),
+    weights=[ 
+              (1.0, self.locationscore(rows)),
               (1.0, self.frequencyscore(rows)),
-              (2.0, self.distancescore(rows)) ]
+              (1.5, self.distancescore(rows)),
+              (2.0, self.inboundlinkscore(rows)) ]
     for (weight,scores) in weights:
       for url in totalscores:
         totalscores[url]+=weight*scores[url]
@@ -242,6 +244,11 @@ class searcher:
     
     return self.normalizescores(mindistance,smallIsBetter=1)
 
+  def inboundlinkscore(self,rows):
+    uniqueurls=set([row[0] for row in rows])
+    inboundcount=dict([(u,self.con.execute(
+       'select count(*) from link where toid=%d' % u).fetchone()[0]) for u in uniqueurls])
+    return self.normalizescores(inboundcount)
 
 
 
