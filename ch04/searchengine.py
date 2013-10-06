@@ -24,3 +24,21 @@ def gettextonly(self,soup):
   # Separate the words by any non-whitespace character
 def separatewords(self,text):
   return None
+
+# Return true if this url is already indexed
+def isindexed(self,url):
+  return False
+
+# Add a link between two pages
+def addlinkref(self,urlFrom,urlTo,linkText):
+  pass
+
+# Starting with a list of pages, do a breadth
+# first search to the given depth, indexing pages
+# as we go
+def crawl(self,pages,depth=2):
+  pass
+
+# Create the Database tables
+def createindextables(self):
+  pass
