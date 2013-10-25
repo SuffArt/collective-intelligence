@@ -236,6 +236,8 @@ class searcher:
     for (score,urlid) in rankedscores[0:10]:
       print '%f\t%s' % (score,self.geturlname(urlid))
 
+    return wordids,[r[1] for r in rankedscores[0:10]]
+
 
   def normalizescores(self,scores,smallIsBetter=0):
     vsmall=0.00001 # Avoid division by zero errors
@@ -306,6 +308,13 @@ class searcher:
           linkscores[toid]+=pr
 
     return self.normalizescores(linkscores, smallIsBetter = 0)
+
+  def nnscore(self,rows,wordids):
+    # Get unique URL IDs as an ordered list
+    urlids=[urlid for urlid in set([row[0] for row in rows])]
+    nnres=mynet.getresult(wordids,urlids)
+    scores=dict([(urlids[i],nnres[i]) for i in range(len(urlids))])
+    return self.normalizescores(scores)
 
 
 
