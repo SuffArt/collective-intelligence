@@ -7,7 +7,6 @@ for line in lines:
 	my_data.append ([word.strip() for word in line])
 
 
-
 class decisionnode:
 	def __init__(self,col=-1,value=None,results=None,tb=None,fb=None):
 		self.col=col
@@ -71,7 +70,7 @@ def giniimpurity2 (rows):
 # Entropy is the sum of p(x)log(p(x)) across all
 # the different possible results
 def entropy(rows):
-	from math import log 
+	from math import log
 	log2=lambda x:log(x)/log(2)
 	results=uniquecounts(rows) 
 	
@@ -176,7 +175,7 @@ def prune(tree,mingain):
 
 		# Test the reduction in entropy
 		# Note que uniquecounts so precisa que tenha uma ultima coluna result
-		delta=entropy(tb+fb)-(entropy(tb)+entropy(fb)/2)
+		delta = entropy(tb + fb) - (entropy(tb) + entropy(fb)) / 2
 
 		if delta<mingain:
 			# Merge the branches
