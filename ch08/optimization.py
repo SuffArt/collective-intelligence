@@ -4,28 +4,6 @@ import math
 import types
 
 
-people = [('Seymour','BOS'),
-          ('Franny','DAL'),
-          ('Zooey','CAK'),
-          ('Walt','MIA'),
-          ('Buddy','ORD'),
-          ('Les','OMA')]
-
-# LaGuardia airport in New York
-destination='LGA'
-
-flights={}
-#
-for line in file('schedule.txt'):
-  origin,dest,depart,arrive,price=line.strip( ).split(',') 
-  flights.setdefault((origin,dest),[])
-  # Add details to the list of possible flights
-  flights[(origin,dest)].append((depart,arrive,int(price)))
-
-# Some samples
-s = [1,4,3,2,7,3,6,3,2,4,5,3]
-domain = [(0, 8)] * (len(people) * 2)
-
 def getminutes(t):
   x=time.strptime(t,'%H:%M')
   return x[3]*60+x[4]
@@ -194,8 +172,7 @@ def geneticoptimize(domain,costf,popsize=50,step=1, mutprob=0.2,elite=0.2,maxite
         c2=random.randint(0,topelite)
         pop.append(crossover(ranked[c1],ranked[c2]))
         
-    # Print current best score
-    print scores[0][0]
-      
+    print "Iteration # %i / %i (Current cost: %i)."  % (i, maxiter, scores[0][0])
+
   return scores[0][1]
 

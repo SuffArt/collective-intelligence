@@ -39,7 +39,7 @@ def euclidean(v1,v2):
 def getdistances(data,vec1):
   distancelist=[]
   for i in range(len(data)):
-    vec2=data[i]['input']
+    vec2=data[i]['input'] 
     distancelist.append((euclidean(vec1,vec2),i)) 
   
   distancelist.sort( )
@@ -60,7 +60,7 @@ def knnestimate(data,vec1,k=3):
 def inverseweight(dist,num=1.0,const=0.1):
   return num/(dist+const)
 
-def subtractweight(dist,const=1.0):
+def subtractweight(dist,const=1000):
   if dist>const:
     return 0
   else:
@@ -142,7 +142,120 @@ def rescale(data,scale):
     
   return scaleddata
 
+# ********************************
+# ***** Optimizing the Scale *****
+# ********************************
 
+weightdomain=[(0,20)]*4 # 4 features
+
+def createcostfunction(algf,data):
+  def costf(scale):
+    sdata=rescale(data,scale)
+    return crossvalidate(algf,sdata,trials=10)
+  return costf
+
+# *****************************************************
+# ******* Parameter Setting Using Optimization ********
+# *****************************************************
+
+# *********************************
+# ***** Optimizing Everything *****
+# *********************************
+
+from optimization import annealingoptimize
+
+def ann_fast (domain, costf): return annealingoptimize (domain, costf, cool = 0.7, step = 2)
+
+def testalgorithmK(algf, k_value, trainset,testset):
+  error=0.0
+  for row in testset:
+    guess=algf(trainset,row['input'], k = k_value)
+    error+=(row['result']-guess)**2
+
+  return error/len(testset)
+
+def crossvalidateK(algf,data, k_value, trials=100,test=0.05):
+  error=0.0
+  for i in range(trials):
+    trainset,testset=dividedata(data,test)
+    error+=testalgorithmK(algf,k_value, trainset,testset)
+  
+  return error/trials
+
+def optimizeall (prediction_alg, data, optimization_alg):
+  domain = [(0,20)]*2 + [(1, 10)] # 4 features + k value
+
+  def costfunction (scale_and_neighbours):
+    scale = scale_and_neighbours[0:-1] # A ultima coordenada eh o num de neighbours; tiramos ela fora
+    k_value = scale_and_neighbours[-1]
+    sdata = rescale (data, scale)
+    return crossvalidateK (prediction_alg, sdata, k_value)
+
+  optimal = optimization_alg (domain, costfunction)
+  return "Optimal choice: %s. Cost: %s" % (optimal, costfunction(optimal))
+
+
+# **********************************
+# ***** Optimizing WeightedKNN *****
+# **********************************
+
+
+def testweighted(weightf, k_value, trainset,testset):
+  error=0.0
+  for row in testset:
+    # print "Running weightedknn with k = %i, weightf = %s" % (k_value, weightf)
+    guess=weightedknn (trainset,row['input'], k = k_value, weightf = weightf)
+    error+=(row['result']-guess)**2
+
+  return error/len(testset)
+
+def crossvalidateweighted(weightf, data, k_value, trials=100,test=0.05):
+  error=0.0
+  for i in range(trials):
+    trainset,testset=dividedata(data,test)
+    error+=testweighted(weightf,k_value, trainset,testset)
+  
+  return error/trials
+
+def optimizeweighted (data, optimization_alg):
+  domain = [(0,20)]*2 + [(1, 10), (0, 2)]# 4 features + k value + weight function
+  weight_functions = [gaussian, inverseweight, subtractweight]
+
+  def costfunction (scale_and_neighbours):
+    scale = scale_and_neighbours[0:-2] 
+    k_value = scale_and_neighbours[-2]
+    weightf = weight_functions [scale_and_neighbours[-1]]
+
+    sdata = rescale (data, scale)
+    return crossvalidateweighted (weightf, sdata, k_value)
+
+  optimal = optimization_alg (domain, costfunction)
+
+  return "Optimal choice: %s. Cost: %s" % (optimal, costfunction(optimal))
+
+def testAll (data = wineset1(), optimization_alg = ann_fast):
+  print "*** Default settings ****"
+  print crossvalidate (knnestimate, data)
+  print crossvalidate (weightedknn, data)
+  print "*************************"
+  
+  print "***** Optimizing *****"
+  print optimizeall (knnestimate, data, optimization_alg)
+  print optimizeweighted (data, optimization_alg)
+  print "**********************"
+
+# ***************************************
+# ********* Uneven Distributions ********
+# ***************************************
+
+def wineset3(): 
+  rows=wineset1( ) 
+  for row in rows:
+    if random()<0.5:
+      # Wine was bought at a discount store 
+      row['result']*=0.6
+  
+  return rows
 
 
 
